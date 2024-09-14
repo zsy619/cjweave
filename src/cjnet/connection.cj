@@ -12,6 +12,7 @@ public enum ConnState {
 
 public class Connection <: IConnectionBase {
     private var _conn: ?TcpServerSocket = None
+	// 链接
     public mut prop Conn: ?TcpServerSocket {
         get() {
             _conn
@@ -22,6 +23,7 @@ public class Connection <: IConnectionBase {
     }
 
     private var _connId: UInt32 = 0
+	// 链接ID
     public mut prop ConnId: UInt32 {
         get() {
             _connId
@@ -32,6 +34,7 @@ public class Connection <: IConnectionBase {
     }
 
     private var _isClosed: Bool = false
+	// 状态
     public mut prop IsClosed: Bool {
         get() {
             _isClosed
@@ -92,7 +95,8 @@ public class Connection <: IConnectionBase {
                         var dataCount = client.read(dataBuffer)
                         if (dataCount == Int64(dataLen)) {
                             msg.setData(dataBuffer)
-                            println("${CjWeavePrefix}startReader() 收到消息内容：${msg.getData()}")
+                            println("${CjWeavePrefix}startReader() index = ${index} 收到消息内容：${msg.getData()}")
+							index++
                             let req = newReuqest(this, client, msg)
                             this.router(req)
                         } else {

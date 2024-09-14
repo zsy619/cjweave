@@ -34,7 +34,7 @@ class ServerTests {
         sleep(Duration.millisecond * 500)
 
         // 启动10个客户端
-        for (i in 1000..1100) {
+        for (i in 10..50) {
             spawn {
                 testClient(UInt8(i))
             }

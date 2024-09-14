@@ -81,10 +81,12 @@ public class Message <: IMessage & Serializable<Message> {
     }
 }
 
+// 创建消息
 public func newMessage(): IMessage {
     return Message()
 }
 
+// 设置消息
 public func newMessage(msgId: UInt32, data: Array<Byte>): IMessage {
     var msg = Message()
     msg.setMsgId(msgId)
@@ -92,6 +94,7 @@ public func newMessage(msgId: UInt32, data: Array<Byte>): IMessage {
     return msg
 }
 
+// 设置消息
 public func newMessage(msgId: UInt32, data: String): IMessage {
     var msg = Message()
     msg.setMsgId(msgId)
@@ -99,6 +102,7 @@ public func newMessage(msgId: UInt32, data: String): IMessage {
     return msg
 }
 
+// 打包消息
 public func newMessagePack(msgId: UInt32, data: Array<Byte>): Array<Byte> {
 	var pack = newDataPack()
 	var msg = Message()
@@ -107,6 +111,7 @@ public func newMessagePack(msgId: UInt32, data: Array<Byte>): Array<Byte> {
     return pack.pack(msg)
 }
 
+// 打包消息
 public func newMessagePack(msgId: UInt32, data: String): Array<Byte> {
 	var ds = data.toArray()
 	newMessagePack(msgId, ds)

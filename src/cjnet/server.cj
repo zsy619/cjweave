@@ -65,18 +65,17 @@ public class Server <: IServerBase {
 
     // 启动服务器
     public func start(): Unit {
-        println("${CjWeavePrefix}server start Name = ${this.Name} IP = ${this.IP} Port = ${this.Port} is starting...")
+        println("${CjWeavePrefix}server start IP = ${this.IP} Port = ${this.Port} is starting...")
         // 创建ServerSocket对象
         // 监听服务地址
         // 阻塞等的客户端链接，处理客户端链接业务（读写）
         spawn {
-            var connId: UInt32 = 8888888
+            var connId: UInt32 = 88888888
             try {
                 let socketAddress = IPSocketAddress.parse("${this.IP}:${this.Port}")
                 let serverSocket = TcpServerSocket(bindAt: socketAddress)
                 serverSocket.bind()
-                println(
-                    "${CjWeavePrefix}server start Name = ${this.Name} IP = ${this.IP} Port = ${this.Port} is started")
+                println("${CjWeavePrefix}server start IP = ${this.IP} Port = ${this.Port} started")
 
                 // 处理客户端链接业务
                 let dealConn = newConnection(serverSocket, connId, msgHandle: this.MsgHandle)
