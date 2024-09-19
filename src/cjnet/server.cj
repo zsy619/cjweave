@@ -70,6 +70,9 @@ public class Server <: IServerBase {
         // 监听服务地址
         // 阻塞等的客户端链接，处理客户端链接业务（读写）
         spawn {
+			// 开启消息队列
+			this.MsgHandle?.startWorkerPool()
+			
             var connId: UInt32 = 88888888
             try {
                 let socketAddress = IPSocketAddress.parse("${this.IP}:${this.Port}")

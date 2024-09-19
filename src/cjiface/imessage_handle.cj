@@ -10,6 +10,12 @@ public interface IMessageHandle<T1, T2> where T1 <: IRequestBase, T2 <: IRouterB
 
     // toString
     func toString(): String
+
+    // 启动一个worker工作池（开启工作池的动作只能发生一次）
+    func startWorkerPool(): Unit
+
+	// 将消息发送到任务队列中
+    func sendMsgToTaskQueue(request: IRequestBase): Unit
 }
 
 // 消息处理接口

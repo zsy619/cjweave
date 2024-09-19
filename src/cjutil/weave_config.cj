@@ -8,20 +8,23 @@ import std.fs.*
 import std.convert.*
 
 public struct WeaveConfig <: Serializable<WeaveConfig> {
-    public var TcpServer: ?IServer = None
-    public var Host: String = "0.0.0.0"
-    public var TcpPort: UInt16 = 9090
-    public var TcpVersion: String = "IPv4"
-    public var Name: String = "CjWeave Server App"
-    public var Version: String = "v1.0.0"
-    public var MaxConn: Int32 = 1000
-    public var MaxPackageSize: Int64 = 4096
+    public var TcpServer: ?IServer = None // 全局Server对象
+    public var Host: String = "0.0.0.0" // 当前服务器主机监听的IP
+    public var TcpPort: UInt16 = 9090 // 当前服务器主机监听的端口
+    public var TcpVersion: String = "IPv4" // 当前服务器主机监听的协议版本
+    public var Name: String = "CjWeave Server App" // 当前服务的名称
+    public var Version: String = "v1.0.0" // 当前CjWeave的版本号
+    public var MaxConn: Int32 = 1000 // 当前服务器主机允许的最大连接数
+    public var MaxPackageSize: Int64 = 4096 // 当前服务器主机允许的最大数据包大小
+    public var WorkerPoolSize: UInt32 = 100 // 当前工作池的数量
+    public var MaxWorkerTaskLen: UInt32 = 1024 // 每个worker对应消息队列的长度
 
     public func serialize(): DataModel {
         return DataModelStruct().add(field<String>("host", Host)).add(field<UInt16>("tcpPort", TcpPort)).add(
             field<String>("tcpVersion", TcpVersion)).add(field<String>("name", Name)).add(
             field<String>("version", Version)).add(field<Int32>("maxConn", MaxConn)).add(
-            field<Int64>("maxPackageSize", MaxPackageSize))
+            field<Int64>("maxPackageSize", MaxPackageSize)).add(field<UInt32>("workerPoolSize", WorkerPoolSize)).add(
+            field<UInt32>("maxWorkerTaskLen", MaxWorkerTaskLen))
     }
 
     public static func deserialize(dm: DataModel): WeaveConfig {
@@ -37,6 +40,8 @@ public struct WeaveConfig <: Serializable<WeaveConfig> {
         result.Version = String.deserialize(dms.get("version"))
         result.MaxConn = Int32.deserialize(dms.get("maxConn"))
         result.MaxPackageSize = Int64.deserialize(dms.get("maxPackageSize"))
+        result.WorkerPoolSize = UInt32.deserialize(dms.get("workerPoolSize"))
+        result.MaxWorkerTaskLen = UInt32.deserialize(dms.get("maxWorkerTaskLen"))
         return result
     }
 
@@ -49,6 +54,8 @@ public struct WeaveConfig <: Serializable<WeaveConfig> {
         w.writeName("version").writeValue(Version)
         w.writeName("maxConn").writeValue(MaxConn)
         w.writeName("maxPackageSize").writeValue(MaxPackageSize)
+        w.writeName("workerPoolSize").writeValue(WorkerPoolSize)
+        w.writeName("maxWorkerTaskLen").writeValue(MaxWorkerTaskLen)
         w.endObject()
     }
 
@@ -81,6 +88,8 @@ public struct WeaveConfig <: Serializable<WeaveConfig> {
             this.Version = glbConf.Version
             this.MaxConn = glbConf.MaxConn
             this.MaxPackageSize = glbConf.MaxPackageSize
+            this.WorkerPoolSize = glbConf.WorkerPoolSize
+            this.MaxWorkerTaskLen = glbConf.MaxWorkerTaskLen
             true
         }
     }

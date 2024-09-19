@@ -16,7 +16,7 @@ public interface IConnection {
     func getTCPConn(): ?TcpServerSocket
 
     // 获取链接ID
-    func getConnID(): UInt32
+    func getConnId(): UInt32
 
     // 获取远程客户端TCP状态 IP Port
     func remoteAddr(): ?SocketAddress

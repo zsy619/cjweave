@@ -5,14 +5,34 @@ import std.sync.*
 import cjweave.xtool.*
 import cjweave.cjiface.*
 import cjweave.cjutil.*
+import std.collection.concurrent.*
 
-public enum ConnState {
-    | NotExist | Exist | Closed
-}
-
+// 链接模块
 public class Connection <: IConnectionBase {
+    private var _exitChan: BlockingQueue<Bool> = BlockingQueue<Bool>()
+    // 链接退出通知
+    public mut prop ExitChan: BlockingQueue<Bool> {
+        get() {
+            _exitChan
+        }
+        set(value) {
+            _exitChan = value
+        }
+    }
+
+    private var _msgChann: BlockingQueue<Array<Byte>> = BlockingQueue<Array<Byte>>()
+    // 无缓冲管道，用于读写之间的消息通讯
+    public mut prop MsgChann: BlockingQueue<Array<Byte>> {
+        get() {
+            _msgChann
+        }
+        set(value) {
+            _msgChann = value
+        }
+    }
+
     private var _conn: ?TcpServerSocket = None
-	// 链接
+    // 链接
     public mut prop Conn: ?TcpServerSocket {
         get() {
             _conn
@@ -23,7 +43,7 @@ public class Connection <: IConnectionBase {
     }
 
     private var _connId: UInt32 = 0
-	// 链接ID
+    // 链接ID
     public mut prop ConnId: UInt32 {
         get() {
             _connId
@@ -34,7 +54,7 @@ public class Connection <: IConnectionBase {
     }
 
     private var _isClosed: Bool = false
-	// 状态
+    // 状态
     public mut prop IsClosed: Bool {
         get() {
             _isClosed
@@ -96,7 +116,7 @@ public class Connection <: IConnectionBase {
                         if (dataCount == Int64(dataLen)) {
                             msg.setData(dataBuffer)
                             println("${CjWeavePrefix}startReader() index = ${index} 收到消息内容：${msg.getData()}")
-							index++
+                            index++
                             let req = newReuqest(this, client, msg)
                             this.router(req)
                         } else {
@@ -119,7 +139,14 @@ public class Connection <: IConnectionBase {
     // 执行注册路由的方法
     func router(reqeust: IRequestBase): Unit {
         if (!OptionPredicate.isEmpty(this.MsgHandle)) {
-            this.MsgHandle?.doMessageHandle(reqeust)
+            spawn {
+                // 开启了工作池机制
+                if (GlobalConfig.MaxPackageSize > 0) {
+                    this.MsgHandle?.sendMsgToTaskQueue(reqeust)
+                } else {
+                    this.MsgHandle?.doMessageHandle(reqeust)
+                }
+            }
         } else {
             println("${CjWeavePrefix}router() MsgHandle is None")
         }
@@ -149,6 +176,7 @@ public class Connection <: IConnectionBase {
             println("${CjWeavePrefix}conn stop() ConnId=${this.ConnId} is closed")
             return
         }
+        this.ExitChan.enqueue(true)
         this.IsClosed = true
         this.Conn?.close()
         println("${CjWeavePrefix}conn stop() ConnId=${this.ConnId}")
@@ -160,7 +188,7 @@ public class Connection <: IConnectionBase {
     }
 
     // 获取链接ID
-    public func getConnID(): UInt32 {
+    public func getConnId(): UInt32 {
         this.ConnId
     }
 
