@@ -65,27 +65,25 @@ public class Server <: IServerBase {
 
     // 启动服务器
     public func start(): Unit {
-        println("${CjWeavePrefix}server start IP = ${this.IP} Port = ${this.Port} is starting...")
+        println("${CjWeavePrefix}Server Listenner at IP = ${this.IP} Port = ${this.Port} is starting...")
+        // 开启消息队列
         // 创建ServerSocket对象
         // 监听服务地址
         // 阻塞等的客户端链接，处理客户端链接业务（读写）
         spawn {
-			// 开启消息队列
-			this.MsgHandle?.startWorkerPool()
-			
+            this.MsgHandle?.startWorkerPool()
+
             var connId: UInt32 = 88888888
             try {
                 let socketAddress = IPSocketAddress.parse("${this.IP}:${this.Port}")
                 let serverSocket = TcpServerSocket(bindAt: socketAddress)
                 serverSocket.bind()
-                println("${CjWeavePrefix}server start IP = ${this.IP} Port = ${this.Port} started")
+                println("${CjWeavePrefix}Server start IP = ${this.IP} Port = ${this.Port} started")
 
                 // 处理客户端链接业务
                 let dealConn = newConnection(serverSocket, connId, msgHandle: this.MsgHandle)
                 connId++
-                spawn {
-                    dealConn.start()
-                }
+                dealConn.start()
             } catch (ex: SocketException) {
                 ex.printStackTrace()
                 println("${CjWeavePrefix}Server start catch: connId = ${connId} error = ${ex.toString()}")
@@ -93,13 +91,12 @@ public class Server <: IServerBase {
                 println("${CjWeavePrefix}Server start finally: connId = ${connId}")
             }
         }
-        println("${CjWeavePrefix}server start")
     }
 
     // 停止服务器
     public func stop(): Unit {
-        println("${CjWeavePrefix}server stop Name = ${this.Name} IP = ${this.IP} Port = ${this.Port} is stopping...")
-        println("${CjWeavePrefix}server stop")
+        println("${CjWeavePrefix}Server stop Name = ${this.Name} IP = ${this.IP} Port = ${this.Port} is stopping...")
+        println("${CjWeavePrefix}Server stop")
     }
 
     // 运行服务器
@@ -110,27 +107,27 @@ public class Server <: IServerBase {
         // 阻塞
         while (true) {}
 
-        println("${CjWeavePrefix}server serve")
+        println("${CjWeavePrefix}Server serve")
     }
 
     // 路由功能
-    public func addRouter(msgId: UInt32, router: IRouterBase): IServer {
+    public func addRouter(msgId: UInt32, router: IRouterBase): IServerBase {
         if (OptionPredicate.isEmpty(this.MsgHandle)) {
             this.MsgHandle = newMessageHandle()
         }
         this.MsgHandle?.addRouter(msgId, router)
-        println("${CjWeavePrefix}server add msgHandle: msgId = ${msgId},router = ${router.toString()}")
+        println("${CjWeavePrefix}Server addRouter() msgId = ${msgId},router = ${router.toString()}")
         this
     }
 
     // 路由功能
-    public func addRouter(handles: HashMap<UInt32, IRouterBase>): IServer {
+    public func addRouter(handles: HashMap<UInt32, IRouterBase>): IServerBase {
         if (OptionPredicate.isEmpty(this.MsgHandle)) {
             this.MsgHandle = newMessageHandle()
         }
         for (handle in handles) {
             this.MsgHandle?.addRouter(handle[0], handle[1])
-            println("${CjWeavePrefix}server add msgHandle: msgId = ${handle[0]},router = ${handle[1].toString()}")
+            println("${CjWeavePrefix}Server addRouter() msgId = ${handle[0]},router = ${handle[1].toString()}")
         }
         this
     }

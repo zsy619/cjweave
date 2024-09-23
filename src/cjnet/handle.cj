@@ -11,7 +11,7 @@ public class DefaultHandle <: IHandle {
         if (OptionPredicate.isEmpty(conn)) {
             throw SocketException("conn is null")
         }
-        println("${CjWeavePrefix}DefaultHandle handle len ${len} bytes: ${data[0..len]}")
+        println("${CjWeavePrefix}DefaultHandle handle() len ${len} bytes: ${data[0..len]}")
     }
 }
 

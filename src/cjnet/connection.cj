@@ -5,6 +5,7 @@ import std.sync.*
 import cjweave.xtool.*
 import cjweave.cjiface.*
 import cjweave.cjutil.*
+import std.collection.*
 import std.collection.concurrent.*
 
 // 链接模块
@@ -75,9 +76,20 @@ public class Connection <: IConnectionBase {
         }
     }
 
+    private var _property: HashMap<String, Any> = HashMap<String, Any>()
+    // 链接属性
+    public mut prop Property: HashMap<String, Any> {
+        get() {
+            _property
+        }
+        set(value) {
+            _property = value
+        }
+    }
+
     // 链接的读业务
     func startReader() {
-        println("${CjWeavePrefix}startReader() ConnId=${this.ConnId}")
+        println("${CjWeavePrefix}Conn startReader() ConnId=${this.ConnId}")
         try {
             let conn = this.Conn.getOrThrow()
             while (true) {
@@ -88,18 +100,19 @@ public class Connection <: IConnectionBase {
                     }
                 } catch (ex: SocketException) {
                     ex.printStackTrace()
-                    println("${CjWeavePrefix}startReader() ConnId=${this.ConnId} SocketException ${ex.toString()}")
+                    println("${CjWeavePrefix}Conn startReader() ConnId=${this.ConnId} SocketException ${ex.toString()}")
                 }
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
+            println("${CjWeavePrefix}Conn startReader() ConnId=${this.ConnId} Exception ${ex.toString()}")
         }
         this.stop()
     }
 
+    // 读取客户端数据
     func startReaderClient(client: TcpSocket): Unit {
         while (true) {
-            var index: Int64 = 1
             try {
                 var dataPack = newDataPack()
                 var headLen = Int64(dataPack.getHeadLen())
@@ -107,7 +120,9 @@ public class Connection <: IConnectionBase {
                 var headCount = client.read(headBuffer)
                 if (headCount == headLen) { // 头消息
                     var msg = dataPack.unPack(headBuffer)
-                    println("${CjWeavePrefix}startReader() 收到消息头信息：${msg.getMsgId()}  ${msg.getMsgLen()}")
+                    println(
+                        "${CjWeavePrefix}Conn startReaderClient() 收到消息头信息：${msg.getMsgId()}  ${msg.getMsgLen()}"
+                    )
                     // 继续读取data内容
                     var dataLen = Int64(msg.getMsgLen())
                     if (dataLen > 0) {
@@ -115,23 +130,26 @@ public class Connection <: IConnectionBase {
                         var dataCount = client.read(dataBuffer)
                         if (dataCount == Int64(dataLen)) {
                             msg.setData(dataBuffer)
-                            println("${CjWeavePrefix}startReader() index = ${index} 收到消息内容：${msg.getData()}")
-                            index++
+                            println("${CjWeavePrefix}Conn startReaderClient() 收到消息内容：${msg.getData()}")
                             let req = newReuqest(this, client, msg)
                             this.router(req)
                         } else {
-                            println("${CjWeavePrefix}startReader() 收到消息头内容[非标准消息]：${dataBuffer}")
+                            println(
+                                "${CjWeavePrefix}Conn startReaderClient() 收到消息头内容[非标准消息]：${dataBuffer}")
                         }
                     } else {
-                        println("${CjWeavePrefix}startReader() 消息内容为空")
+                        println("${CjWeavePrefix}Conn startReaderClient() 消息内容为空")
                     }
                 } else if (headCount > 0) {
-                    println("${CjWeavePrefix}startReader() 收到消息头信息[非标准消息]：${headCount}")
+                    println("${CjWeavePrefix}Conn startReaderClient() 收到消息头信息[非标准消息]：${headCount}")
                 } else {
                     sleep(Duration.millisecond * 500)
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()
+                println(
+                    "${CjWeavePrefix}Conn startReaderClient() connId=${this.ConnId} 读取客户端数据异常：${ex.toString()}"
+                )
             }
         }
     }
@@ -148,13 +166,13 @@ public class Connection <: IConnectionBase {
                 }
             }
         } else {
-            println("${CjWeavePrefix}router() MsgHandle is None")
+            println("${CjWeavePrefix}Conn router() MsgHandle is None")
         }
     }
 
     // 调用当前链接所绑定的HandleAPI
     func handle(buf: Array<Byte>, count: Int): Unit {
-        println("${CjWeavePrefix}handle() buf=${buf} count=${count}")
+        println("${CjWeavePrefix}Conn handle() buf=${buf} count=${count}")
         // if (!OptionPredicate.isEmpty(this.HandleAPI)) {
         //     this.HandleAPI?.handle(this.Conn, buf, count)
         // } else {
@@ -167,19 +185,19 @@ public class Connection <: IConnectionBase {
         spawn {
             startReader()
         }
-        println("${CjWeavePrefix}conn start() ConnId=${this.ConnId}")
+        println("${CjWeavePrefix}Conn start() ... ConnId=${this.ConnId}")
     }
 
     // 停止链接
     public func stop(): Unit {
         if (this.IsClosed) {
-            println("${CjWeavePrefix}conn stop() ConnId=${this.ConnId} is closed")
+            println("${CjWeavePrefix}Conn stop() ConnId=${this.ConnId} is closed")
             return
         }
         this.ExitChan.enqueue(true)
         this.IsClosed = true
         this.Conn?.close()
-        println("${CjWeavePrefix}conn stop() ConnId=${this.ConnId}")
+        println("${CjWeavePrefix}Conn stop() ... ConnId=${this.ConnId}")
     }
 
     // 获取链接
@@ -202,13 +220,28 @@ public class Connection <: IConnectionBase {
 
     // 数据发送
     public func send(data: Array<Byte>): SocketException {
-        println("${CjWeavePrefix}send data ${data}")
+        println("${CjWeavePrefix}Conn send data ${data}")
         return SocketException()
+    }
+
+    // 设置链接属性
+    public func setProperty(key: String, val: Any): Unit {
+        this.Property.put(key, val)
+    }
+
+    // 获取链接属性
+    public func getProperty(key: String): ?Any {
+        this.Property.get(key)
+    }
+
+    // 移出链接属性
+    public func removeProperty(key: String): Unit {
+        this.Property.remove(key)
     }
 
     // toString
     public func toString(): String {
-        return "Connection [ConnId=${this.ConnId}, IsClosed=${this.IsClosed}]"
+        return "Conn [ConnId=${this.ConnId}, IsClosed=${this.IsClosed}]"
     }
 }
 

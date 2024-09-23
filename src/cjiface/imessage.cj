@@ -1,6 +1,6 @@
 package cjweave.cjiface
 
-// 消息
+// 消息接口
 public interface IMessage {
     // 获取消息ID
     func getMsgId(): UInt32

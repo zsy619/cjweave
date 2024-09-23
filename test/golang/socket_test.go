@@ -27,14 +27,14 @@ func Test_Message(t *testing.T) {
 }
 
 func Test_MessageSocket(t *testing.T) {
-	server := "0.0.0.0:9090"
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", server)
+	ipAddress := "0.0.0.0:9090"
+	client, err := net.ResolveTCPAddr("tcp4", ipAddress)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
 		os.Exit(1)
 	}
 
-	conn, err := net.DialTCP("tcp", nil, tcpAddr)
+	conn, err := net.DialTCP("tcp", nil, client)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
 		os.Exit(1)
@@ -42,11 +42,17 @@ func Test_MessageSocket(t *testing.T) {
 
 	fmt.Println("connect success")
 	for {
+		var msgId uint32
 		for i := 10000; i < 10020; i++ {
-			go sender(0, conn)
+			go sender(msgId, conn)
+			if msgId == 0 {
+				msgId++
+			} else {
+				msgId = 0
+			}
 		}
-		time.Sleep(time.Millisecond * 500)
-		break
+		time.Sleep(time.Millisecond * 1000)
+		// break
 	}
 }
 
@@ -67,7 +73,7 @@ func sender(msgId uint32, conn net.Conn) {
 	{
 		data := fmt.Sprintf("我爱你中国！%d", msgId+100000)
 		msg := &Message{
-			MsgId:  msgId + 100000,
+			MsgId:  msgId,
 			MsgLen: uint32(len(data)),
 			Data:   []byte(data),
 		}

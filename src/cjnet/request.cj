@@ -7,6 +7,7 @@ import cjweave.cjutil.*
 
 public class Reqeust <: IRequestBase {
     private var _connection: ?IConnection = None
+	// 已经和客户端建立好的链接
     public mut prop Connection: ?IConnection {
         get() {
             _connection
@@ -17,6 +18,7 @@ public class Reqeust <: IRequestBase {
     }
 
     private var _clientSocket: ?TcpSocket = None
+	// 客户端
     public mut prop ClientSocket: ?TcpSocket {
         get() {
             _clientSocket
@@ -27,6 +29,7 @@ public class Reqeust <: IRequestBase {
     }
 
     private var _message: ?IMessage = None
+	// 消息
     public mut prop Message: ?IMessage {
         get() {
             _message
@@ -44,7 +47,7 @@ public class Reqeust <: IRequestBase {
     // 设置当前链接
     public func setConnection(connection: IConnection): Unit {
         this.Connection = connection
-        println("${CjWeavePrefix}set connection")
+        println("${CjWeavePrefix}Reqeust setConnection() ${connection.toString()}")
     }
 
     // 得到请求IMessage
@@ -59,12 +62,13 @@ public class Reqeust <: IRequestBase {
                 var dataPack = newDataPack()
                 let outData = dataPack.pack(msg)
                 this.ClientSocket?.write(outData)
-                println("${CjWeavePrefix}write message ${outData}")
+                println("${CjWeavePrefix}Reqeust write() message ${outData}")
             } catch (ex: Exception) {
                 ex.printStackTrace()
+				println("${CjWeavePrefix}Reqeust write() message failed: ${ex.toString()}")
             }
         } else {
-            println("${CjWeavePrefix}write message failed")
+            println("${CjWeavePrefix}Reqeust write() message failed")
         }
     }
 
@@ -84,9 +88,10 @@ public class Reqeust <: IRequestBase {
 
     // toString
     public func toString(): String {
-        return "Request[connection: ${this.Connection?.toString()}, message: ${this.Message?.toString()}]"
+        return "Request [connection: ${this.Connection?.toString()}, message: ${this.Message?.toString()}]"
     }
 
+    // 构造函数
     public Reqeust(connection: IConnection, clientSocket: TcpSocket, msg: IMessage) {
         this.Connection = connection
         this.ClientSocket = clientSocket

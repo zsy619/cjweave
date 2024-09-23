@@ -24,6 +24,15 @@ public interface IConnection {
     // 数据发送
     func send(data: Array<Byte>): SocketException
 
+	// 设置链接属性
+	func setProperty(key: String, val: Any): Unit
+
+	// 获取链接属性
+	func getProperty(key: String): ?Any
+
+	// 移出链接属性
+	func removeProperty(key: String): Unit
+
     // toString
     func toString(): String
 }

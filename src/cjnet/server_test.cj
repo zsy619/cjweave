@@ -31,7 +31,8 @@ class ServerTests {
             // 初始化服务端
             // 添加处理路由（根据msgId进行路由匹配）
             // 启动服务端
-            newServer().addRouter(0, DefaultRouter()).addRouter(1, WriteBackRouter()).start()
+			var svr = newServer()
+            svr.addRouter(0, DefaultRouter()).addRouter(1, WriteBackRouter()).start()
         }
 
         while (true) {

@@ -94,32 +94,6 @@ class DataPackTests {
                 }
             }
 
-            // spawn {
-            //     // 客户端读取数据，拆包处理
-            //     var dataPack = newDataPack()
-            //     var headLen = Int64(dataPack.getHeadLen())
-            //     while (true) {
-            //         var headBuffer = Array<Byte>(headLen, repeat: 0)
-            //         var headCount = client.read(headBuffer)
-            //         if (headCount == headLen) { // 头消息
-            //             var msg = dataPack.unPack(headBuffer)
-            //             println("[testTcpSocket]Client收到消息头信息：${msg.getMsgId()}  ${msg.getMsgLen()}")
-            //             // 继续读取data内容
-            //             var dataLen = Int64(msg.getMsgLen())
-            //             if (dataLen > 0) {
-            //                 var dataBuffer = Array<Byte>(dataLen, repeat: 0)
-            //                 var dataCount = client.read(dataBuffer)
-            //                 if (dataCount > 0) {
-            //                     msg.setData(dataBuffer)
-            //                     println("[testTcpSocket]Client收到消息内容：${msg.getData()}")
-            //                 }
-            //             }
-            //         } else {
-            //             println("[testTcpSocket]Client收到消息头信息[非标准消息]：${headCount}")
-            //         }
-            //     }
-            // }
-
             while (true) {
                 sleep(Duration.millisecond * 500)
             }
