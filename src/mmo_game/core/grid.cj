@@ -50,6 +50,7 @@ public class Grid {
     }
 }
 
+// 创建一个格子
 public func newGrid(gid: Int, minX: Int, maxX: Int, minY: Int, maxY: Int): Grid {
     return Grid(gid, minX, maxX, minY, maxY)
 }

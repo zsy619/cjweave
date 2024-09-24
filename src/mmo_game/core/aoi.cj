@@ -1,6 +1,7 @@
 package cjweave.mmo_game.core
 
 import std.collection.*
+import std.convert.*
 
 // AOI管理模块
 public class AOIManager {
@@ -70,6 +71,7 @@ public class AOIManager {
     }
 
     // 得到当前区域的关联所有格子
+    // 格子相邻格子最多是8个，最少是3个（靠近边界）
     public func getSurroundGridsByGid(gid: Int): ?ArrayList<Grid> {
         // 判断gid是否在AOIManager中
         if (!grids.contains(gid)) {
@@ -87,7 +89,6 @@ public class AOIManager {
                 }
                 // 计算周围格子的格子ID
                 let checkGid = gid + idx + idy * cntsX
-				// println("	checkGid: ${checkGid}")
                 // 判断周围格子ID是否在AOIManager中
                 if (grids.contains(checkGid)) {
                     // 把周围的格子放到集合中
@@ -97,6 +98,110 @@ public class AOIManager {
         }
 
         return ret
+    }
+
+    // 根据横纵坐标得到对应的格子的全部PlayerIds
+    public func getPidsByPos(x: Float32, y: Float32): ArrayList<Int> {
+        // 得到当前坐标对应的格子ID
+        let curGid = this.getGidByPos(x, y)
+        // 通过格子ID得到周边的格子集合
+        let surroundGrids = this.getSurroundGridsByGid(curGid)
+        // 遍历格子集合，得到每个格子中的全部PlayerIds
+        let playerIds = ArrayList<Int>()
+        if (!surroundGrids.isNone()) {
+            for (grid in surroundGrids.getOrThrow()) {
+                // 得到当前格子中的全部PlayerIds
+                playerIds.appendAll(grid.getPlayerIds())
+            }
+        }
+        return playerIds
+    }
+
+    // 通过横纵坐标得到对应的格子ID
+    public func getGidByPos(x: Float32, y: Float32): Int {
+        // 计算格子X轴坐标
+        var idx = (Int64.parse(x.toString()) - minX) / gridWidth()
+        // 计算格子Y轴坐标
+        var idy = (Int64.parse(y.toString()) - minY) / gridLength()
+        // 防止越界
+        if (idx < 0) {
+            idx = 0
+        }
+        if (idx >= cntsX) {
+            idx = cntsX - 1
+        }
+        if (idy < 0) {
+            idy = 0
+        }
+        if (idy >= cntsY) {
+            idy = cntsY - 1
+        }
+        // 计算格子ID
+        return idy * cntsX + idx
+    }
+
+    // 添加一个Player到一个格子中
+    public func addPidToGrid(pid: Int, gid: Int) {
+        // 判断gid是否在AOIManager中
+        if (!grids.contains(gid)) {
+            return
+        }
+        // 根据gid得到当前格子对象
+        let curGrid = grids.get(gid)
+        // 将Player添加到格子中
+        if (!curGrid.isNone()) {
+            curGrid?.add(pid)
+        }
+        return
+    }
+
+    // 移出一个格子中的Player
+    public func removePidFromGrid(pid: Int, gid: Int) {
+        // 判断gid是否在AOIManager中
+        if (!grids.contains(gid)) {
+            return
+        }
+        // 根据gid得到当前格子对象
+        let curGrid = grids.get(gid)
+        // 将Player添加到格子中
+        if (!curGrid.isNone()) {
+            curGrid?.remove(pid)
+        }
+        return
+    }
+
+    // 通过gid获取全部的PlayerIds
+    public func getPidsByGid(gid: Int): ArrayList<Int> {
+        // 判断gid是否在AOIManager中
+        if (!grids.contains(gid)) {
+            return ArrayList<Int>()
+        }
+        // 根据gid得到当前格子对象
+        let curGrid = grids.get(gid)
+        // 将Player添加到格子中
+        let playerIds = ArrayList<Int>()
+        if (!curGrid.isNone()) {
+            playerIds.appendAll(curGrid.getOrThrow().getPlayerIds())
+        }
+        return playerIds
+    }
+
+    // 通过坐标将Player添加到一个格子中
+    public func addPidToGrid(pid: Int, x: Float32, y: Float32) {
+        // 计算格子ID
+        let gid = getGidByPos(x, y)
+        // 添加到格子中
+        addPidToGrid(pid, gid)
+        return
+    }
+
+    // 通过坐标将Player从一个格子中移除
+    public func removeFromGridByPos(pid: Int, x: Float32, y: Float32) {
+        // 计算格子ID
+        let gid = getGidByPos(x, y)
+        // 添加到格子中
+        removePidFromGrid(pid, gid)
+        return
     }
 }
 
