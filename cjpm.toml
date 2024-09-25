@@ -2,8 +2,8 @@
 
 [package]
   cjc-version = "0.55.3"
-  compile-option = ""
-  description = "nothing here"
+  compile-option = "Pim-hXjR4w4JUc9CX9uYbWK9"
+  description = ""
   link-option = ""
   name = "cjweave"
   output-type = "dynamic"
